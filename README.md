@@ -370,7 +370,7 @@ In the project, jQuery has been extensively used to modify and pass parameters b
 
 Send button in message section will only be available only in the case some galleries are found. Otherwise, it won't be clickable.
 
-
+![pic8](https://github.com/ivanmirandastavenuiter/kontollarte-php/blob/master/pics/8.PNG)
 
 ### Use of AJAX
 
