@@ -4,6 +4,36 @@ A simple and useful app to manage art jobs and contact with the art world profes
 
 __HEY!__: this is the local version. To check it on the internet, click here: http://kontollarte.epizy.com/index.php?mod=user&op=login
 
+## How can I use it?
+
+Be careful at using it, cause __it actually sends emails__. The instructions: 
+
+* Edit messageController.php file and go to sendEmailThroughSTMP method. You got to change the following:
+
+```php
+
+	$email = $receiver->getEmail(); // Receiver mail. This is made by the app itself.
+	$name = $receiver->getName();
+	$body = $details['message'];
+
+	$mail = new PHPMailer; // Mail service
+	$mail->isSMTP();
+	$mail->SMTPDebug = 0;
+	$mail->Host = 'smtp.gmail.com';
+	$mail->Port = 587;
+	$mail->SMTPSecure = 'tls';
+	$mail->SMTPAuth = true;
+
+	$mail->Username = "youremail@gmail.com"; // Your email 
+	$mail->Password = "yourpass"; // Your pass
+
+	$mail->setFrom('youremail@gmail.com', "Hello $name");
+	$mail->addReplyTo('youremail@gmail.com', "Hello $name");
+
+```
+
+__Note that PHPMailer is necessary__. To get more information about how you can use it, go to: https://github.com/PHPMailer/PHPMailer. __Installation with composer is recommended__.
+
 ## Some pics of the app 
 
 ![pic1](https://github.com/ivanmirandastavenuiter/kontollarte-php/blob/master/pics/1.PNG)
