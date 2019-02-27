@@ -292,7 +292,7 @@ In the project, jQuery has been extensively used to modify and pass parameters b
 
 #### Passing parameters on e.preventDefault()
 
-```jQuery
+```javascript
 
   $('#message-form').submit(function(e) {
 
@@ -323,7 +323,7 @@ In the project, jQuery has been extensively used to modify and pass parameters b
 
 #### Modifying parameter values
 
-```jQuery
+```javascript
 
   $('#confirm-message .modal-body .message-content')[0].innerHTML = '';
   $('#confirm-message .modal-body .receivers-content ul').children().remove();
@@ -354,7 +354,7 @@ In the project, jQuery has been extensively used to modify and pass parameters b
 
 AJAX has been also deeply used in this app to load or refresh data from the server, for example. Most significant request is one that implements a recursive ajax request, making one into success porperty of the previous one. It is the next one:
 
-```jQuery
+```javascript
 
 $.ajax({
     url: "index.php",
@@ -492,13 +492,4 @@ Project follows MVC pattern and it is organised based on its rules. The main con
 ### Styles - CSS
 
 Styles features still have to be implemented. At the moment is a bit ugly. It will be done soon... :expressionless:
-
-
-
-
-
-
-
-
-
 
