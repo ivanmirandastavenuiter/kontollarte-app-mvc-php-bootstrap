@@ -1,2 +1,3 @@
-# kontollarte-php
-Aplicación para la gestión de obras de arte y contactos con galerías
+# Kontollarte Art App
+A simple and useful app to manage art jobs and contact with the art world professionals.
+
