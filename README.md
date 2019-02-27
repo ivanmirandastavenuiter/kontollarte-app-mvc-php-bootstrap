@@ -4,7 +4,21 @@ A simple and useful app to manage art jobs and contact with the art world profes
 
 __HEY!__: this is the local version. To check it on the internet, click here: http://kontollarte.epizy.com/index.php?mod=user&op=login
 
-[PICS]
+## Some pics of the app 
+
+![pic1](https://github.com/ivanmirandastavenuiter/kontollarte-php/blob/master/pics/1.PNG)
+
+![pic2](https://github.com/ivanmirandastavenuiter/kontollarte-php/blob/master/pics/2.PNG)
+
+![pic3](https://github.com/ivanmirandastavenuiter/kontollarte-php/blob/master/pics/3.PNG)
+
+![pic4](https://github.com/ivanmirandastavenuiter/kontollarte-php/blob/master/pics/4.PNG)
+
+![pic5](https://github.com/ivanmirandastavenuiter/kontollarte-php/blob/master/pics/5.PNG)
+
+![pic6](https://github.com/ivanmirandastavenuiter/kontollarte-php/blob/master/pics/6.PNG)
+
+![pic7](https://github.com/ivanmirandastavenuiter/kontollarte-php/blob/master/pics/7.PNG)
 
 ## App main functions
 
@@ -24,7 +38,7 @@ This app is organised around __five different fields__:
 
 Firstly, you can check a brief and graphic summary about database organisation:
 
-[DATABASE LINK HERE]
+![database](https://github.com/ivanmirandastavenuiter/kontollarte-php/blob/master/pics/database.PNG)
 
 As you can see in the image, it is composed of nine tables. This is the logic of how it works and how each one are thought:
 
