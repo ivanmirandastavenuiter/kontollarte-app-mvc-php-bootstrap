@@ -84,6 +84,8 @@ As you can see in the image, it is composed of nine tables. This is the logic of
 
 A control of session is implemented through a class. It takes into account whether the session time has expired and extra information, like current user logged or data about galleries. 
 
+Session expires after 15 minutes of user inactivity. This is implemented and controlled by the allowAccess() method.
+
 This is the session class definition:
 
 ```php
