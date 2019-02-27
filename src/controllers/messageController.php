@@ -253,7 +253,7 @@ class MessageController {
 
     private function sendEmailThroughSMTP($details, $receiver) {
 
-        $email = 'ivanmist90@gmail.com'; // Supposed to be $receiver->getEmail()
+        $email = 'receivermail@gmail.com'; // Supposed to be $receiver->getEmail()
         $name = $receiver->getName();
         $body = $details['message'];
     
@@ -265,11 +265,11 @@ class MessageController {
         $mail->SMTPSecure = 'tls';
         $mail->SMTPAuth = true;
     
-        $mail->Username = "junkholebin@gmail.com"; // Your email 
-        $mail->Password = "20122012Rr.";
+        $mail->Username = "yourmail@gmail.com"; // Your email 
+        $mail->Password = "yourpass";
         
-        $mail->setFrom('junkholebin@gmail.com', "Hello $name");
-        $mail->addReplyTo('junkholebin@gmail.com', "Hello $name");
+        $mail->setFrom('yourmail@gmail.com', "Hello $name");
+        $mail->addReplyTo('yourmail@gmail.com', "Hello $name");
         $mail->addAddress($email, $name);
         $mail->Subject = 'Purpose of contact';
         $this->writeHTMLMessage($body);
