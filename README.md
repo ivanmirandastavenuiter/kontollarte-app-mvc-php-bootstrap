@@ -366,6 +366,12 @@ In the project, jQuery has been extensively used to modify and pass parameters b
 
 ```
 
+#### Enabled/Disabled buttons
+
+Send button in message section will only be available only in the case some galleries are found. Otherwise, it won't be clickable.
+
+
+
 ### Use of AJAX
 
 AJAX has been also deeply used in this app to load or refresh data from the server, for example. Most significant request is one that implements a recursive ajax request, making one into success porperty of the previous one. It is the next one:
