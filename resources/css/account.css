@@ -1,0 +1,14 @@
+        
+/* My account css */ 
+
+h2 {
+	text-align: center;
+	margin: 40px;
+}
+#table-info-item {
+	width: 500px;
+	margin: 0 auto;
+}
+#first-update-button, #first-delete-button {
+	margin: 20px;
+}

@@ -1,0 +1,36 @@
+.table-container {
+    width: 1200px;
+    margin: 20px auto; 
+}
+
+.cards-container {
+    width: 1200px;
+    margin: 30px auto 0px;
+}
+
+.left {
+    margin: 20px 0px;
+}
+.right {
+    margin: 20px 0px;   
+}
+
+.refresh-btn-container {
+    text-align: center;
+    margin: 50px auto;
+}
+
+#gallery-view-title > h2 {
+    text-align: center !important;
+    padding: 20px !important;
+}
+
+#gallery-table-title > h3 {
+    text-align: center !important;
+    padding: 20px !important;
+}
+
+#gallery-notfound-title > h4 {
+    text-align: center !important;
+    padding: 20px !important;
+}

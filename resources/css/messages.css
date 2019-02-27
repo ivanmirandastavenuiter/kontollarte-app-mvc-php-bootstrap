@@ -1,0 +1,52 @@
+.table-container {
+  width: 1300px;
+  margin: 40px auto;
+
+}
+
+.messages-container {
+  width: 1300px;
+  height: 500px;
+  margin: 40px auto;
+}
+
+.message-box-container {
+  width: 500px;
+  margin: 90px auto;
+}
+
+.galleries-checkbox-container {
+  width: 500px;
+  margin: 90px auto;
+}
+
+.radio-btn-container {
+  margin: 50px 20px;
+}
+
+.table-container > h3 {
+  text-align: center;
+}
+
+.custom-control {
+  margin: 20px 20px !important;
+}
+
+#confirm-message .modal-body .jobs-content p {
+  margin: 30px auto;
+}
+
+#message-view-title > h2 {
+  text-align: center !important;
+  padding: 20px !important;
+}
+
+#message-table-title > h3 {
+  text-align: center !important;
+  padding: 20px !important;
+}
+
+#message-notfound-title > h4 {
+  text-align: center !important;
+  padding: 20px !important;
+}
