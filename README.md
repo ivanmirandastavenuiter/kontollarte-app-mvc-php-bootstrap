@@ -2,6 +2,8 @@
 
 A simple and useful app to manage art jobs and contact with the art world professionals.
 
+__HEY!__: this is the local version. To check it on the internet, click here: http://kontollarte.epizy.com/index.php?mod=user&op=login
+
 [PICS]
 
 ## App main functions
