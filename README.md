@@ -2,6 +2,8 @@
 
 A simple and useful app to manage art jobs and contact with the art world professionals.
 
+[PICS]
+
 ## App main functions
 
 This app is organised around __five different fields__:
@@ -29,6 +31,470 @@ As you can see in the image, it is composed of nine tables. This is the logic of
 * __Shows and images__: this table stores info of the shows to complete the app and give some extra functionallity. Relation with its own images are made by another table: images. Relation one to one. Foreign key inserted on image table.
 * __Paints__: user jobs. Relation respect to the user of one to many. No intermediate tables. Foreign key on paint table. Images paths stored here are saved on the server in a folder called uploads.
 * __Galleries and user__: information of the galleries user stores as his/her own. Intermediate table recovers user and galleries ids to relate the data between these tables. Relation of many to many. 
+
+## Logic - Main points
+
+### Session control
+
+A control of session is implemented through a class. It takes into account whether the session time has expired and extra information, like current user logged or data about galleries. 
+
+This is the session class definition:
+
+```php
+
+<?php 
+
+class Session {
+
+    private static $instance = null;
+    private static $expirationTime;
+
+    private $userLogged = false;
+
+    private function __construct() { }
+
+    public static function getInstance() {
+        if (is_null(self::$instance)) {
+            self::$instance = new Session();
+        }
+        return self::$instance;
+    }
+
+    public function allowAccess() {
+        $this->getUserLogged();
+        $this->getExpirationTime();
+
+        // Optional lines to check session behavior
+
+        // echo 'Time of last action: '.self::$expirationTime.'</br>;
+        // echo 'Time of inactivity: '.(time() - self::$expirationTime) / 60;
+
+        if ((time() - self::$expirationTime) / 60 < 15
+                || !$this->userLogged) {
+            return true;
+        } else {
+            $this->kill();
+        }
+    }
+
+    public function launch() {
+        if (!isset($_SESSION)) {
+            session_start();
+        }
+    }
+
+    public function __call($method, $parameters) {
+        if (in_array($method, array('kill'))) {
+            return call_user_func_array(array($this, $method), $parameters);
+        }
+    }
+
+    private function kill() {
+        self::$instance = null;
+        $_SESSION = null;
+        session_destroy();
+        header('Location: index.php?mod=user&op=login');
+    }
+
+    public function setNewValue($indexName, $valueName, $serialize = false) {
+
+        if (is_object($valueName) && !$this->userLogged && get_class($valueName) == 'User') {
+            $this->setUserLogged();;
+        }
+
+        if ($serialize) {
+            $_SESSION[$indexName] = serialize($valueName);
+            
+        } else {
+            $_SESSION[$indexName] = $valueName;
+        }
+
+        $this->updateLastActivityTime();
+    }
+
+    public function getValueByIndex($indexName, $unserialize = false) {
+
+        if ($this->checkIfIndexExists($indexName)) {
+
+            if ($unserialize) {
+                return unserialize($_SESSION[$indexName]);
+            } else {
+                return $_SESSION[$indexName];
+            }
+
+        }
+
+        $this->updateLastActivityTime();
+    }
+
+    public function checkIfIndexExists($indexName):bool {
+
+        if (isset($_SESSION[$indexName])) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    public function updateLastActivityTime() {
+        self::$expirationTime = time();
+        $_SESSION['expiration-time'] = self::$expirationTime;
+    }
+
+    private function getExpirationTime() {
+        if (isset($_SESSION['expiration-time'])) {
+            self::$expirationTime = $_SESSION['expiration-time'];
+        }
+        return self::$expirationTime;
+    }
+
+    public function setUserLogged() {
+        $this->userLogged = true;
+        $_SESSION['user-logged'] = $this->userLogged;
+    }
+
+    private function getUserLogged() {
+        if (isset($_SESSION['user-logged'])) { 
+            $this->userLogged = $_SESSION['user-logged'];
+        }   
+    }
+
+}
+
+?>
+
+```
+
+Session.php uses singleton pattern on building the instance. 
+
+### Inheritance
+
+Database.php class inherits from connection.php, leaving basic functions on parent class and making then more specific on child methods.
+
+### API service
+
+The API used is Artsy.net. To simplify the implementation, apitool.php has been created to execute all the methods needed: 
+
+```php
+
+<?php 
+
+    // Class definition
+    class ApiTool {
+
+        private const CLIENT_ID = "f48af15b3de0c1abf012";
+        private const CLIENT_SECRET = "0450009deea32c3fef6ff274e9514082";
+        private $token;
+
+        // Initialize token with the constructor
+        public function __construct() {
+            if (is_null($this->token)) {
+                $this->token = $this->getToken(self::CLIENT_ID, self::CLIENT_SECRET);
+            }
+        }
+
+        // Method to obtain required token for API
+        private function getToken($CLIENT_ID, $CLIENT_SECRET) {
+
+            $postdata = array();
+            $postdata['client_id'] = $CLIENT_ID;
+            $postdata['client_secret'] = $CLIENT_SECRET;
+    
+            $cc = curl_init();
+            curl_setopt($cc, CURLOPT_POST, 1); 
+            curl_setopt($cc, CURLOPT_RETURNTRANSFER, 1); 
+            curl_setopt($cc, CURLOPT_URL, "https://api.artsy.net/api/tokens/xapp_token");
+            curl_setopt($cc, CURLOPT_POSTFIELDS, $postdata);
+            $result = curl_exec($cc);
+    
+            $json_result = json_decode($result);
+            $token = $json_result->token;
+            curl_close($cc);
+            return $token;
+        }
+
+        // Galleries request method
+        function getGalleries($quantity) {
+
+            $gallery_url = "https://api.artsy.net/api/partners?size=".$quantity."&xapp_token=".$this->token;
+			$gallery_json = file_get_contents($gallery_url);
+            $gallery_array = json_decode($gallery_json, true);
+            
+            return $gallery_array;
+        }
+
+        // Shows request method
+        function getShows($quantity) {
+            
+            $shows_url = "https://api.artsy.net/api/shows?status=current&size=".$quantity."&xapp_token=".$this->token;
+			$shows_json = file_get_contents($shows_url);
+            $shows_array = json_decode($shows_json, true)['_embedded']['shows'];
+
+            return $shows_array;
+        }
+
+        function getShowsThroughOffset($quantity, $offset) {
+            
+            $shows_url = "https://api.artsy.net/api/shows?status=current&offset=".$offset."&size=".$quantity."&xapp_token=".$this->token;
+			$shows_json = file_get_contents($shows_url);
+            $shows_array = json_decode($shows_json, true)['_embedded']['shows'];
+
+            return $shows_array;
+        }
+
+        // Shows's images request method
+        function getShowImage($show_id) {
+
+            $image_url = "https://api.artsy.net/api/images?show_id=".$show_id."&xapp_token=".$this->token;
+            $image_json = file_get_contents($image_url);
+            $image_data = array();
+                if (!empty(json_decode($image_json, true)['_embedded']['images']) &&
+                    !is_null(json_decode($image_json, true)['_embedded']['images'][0]['original_height']) &&
+                    !is_null(json_decode($image_json, true)['_embedded']['images'][0]['original_width'])) {
+
+                    $image_data = [
+                                    'link' => json_decode($image_json, true)['_embedded']['images'][0]['_links']['thumbnail']['href'],
+                                    'height' => json_decode($image_json, true)['_embedded']['images'][0]['original_height'],
+                                    'width' => json_decode($image_json, true)['_embedded']['images'][0]['original_width']
+                    ];
+
+                } else {
+                    $image_data = [
+                        'link' => 'https://dummyimage.com/600x400/000/fff.png&text=Currently+not+available',
+                        'height' => 480,
+                        'width' => 720
+                    ];
+                }
+            return $image_data;
+        }
+
+        // Shows the list of galleries
+        function getGalleriesTrhoughOffset($quantity, $offsetParameter) {
+
+            $galleries_array = '';
+            $galleries_url = "https://api.artsy.net/api/partners?offset=".$offsetParameter."&size=".$quantity."&xapp_token=".$this->token;
+            $galleries_json = file_get_contents($galleries_url);
+            $galleries_array = json_decode($galleries_json, true)['_embedded']['partners'];
+            
+            return $galleries_array;
+        }
+
+    }
+
+?>
+
+```
+
+### Transferring and modifying data with jQuery
+
+In the project, jQuery has been extensively used to modify and pass parameters between bootstrap modals. Some examples are shown here:
+
+#### Passing parameters on e.preventDefault()
+
+```jQuery
+
+  $('#message-form').submit(function(e) {
+
+      e.preventDefault();
+
+      var selectedPictures = [];
+      $('.custom-control-input.usr-pics').each(function() {
+          if (this.checked) {
+              inputData = this;
+              $.each(data.pictures, function() { 
+                  if (this.id == inputData.dataset.paintId) {
+                      selectedPictures.push(this);
+                  }
+              });
+          }
+      })
+
+      $('input#message-content').attr('value', JSON.stringify(data.messageBody));
+      $('input#receivers').attr('value', JSON.stringify(data.receivers));
+      $('input#pictures').attr('value', JSON.stringify(selectedPictures));
+
+      this.submit();
+
+  })
+
+
+```
+
+#### Modifying parameter values
+
+```jQuery
+
+  $('#confirm-message .modal-body .message-content')[0].innerHTML = '';
+  $('#confirm-message .modal-body .receivers-content ul').children().remove();
+  $('#confirm-message .modal-body .jobs-content').children().remove();
+
+  $('#confirm-message .modal-body .message-content').append(data.messageBody);
+
+  $.each(data.receivers, function() {
+  $('#confirm-message .modal-body .receivers-content ul')
+          .append(
+              '<li>' + this.name + ' - ' + this.email + '</li>');
+  });
+
+  $.each(data.pictures, function() {
+  $('#confirm-message .modal-body .jobs-content')
+          .append(
+              "<p><strong>" + this.name + "</strong></p>" + 
+              "<img src='" + this.image + "' width='450' height='400'>" +
+              "<div class='custom-control custom-checkbox'>" 
+                  + "<input type='checkbox' data-paint-id='" + this.id + "' class='custom-control-input usr-pics' id='paint" + this.id + "'>"
+                  + "<label class='custom-control-label' for='paint" + this.id + "'>Include this job</label>"
+              + "</div>");
+  });
+
+```
+
+### Use of AJAX
+
+AJAX has been also deeply used in this app to load or refresh data from the server, for example. Most significant request is one that implements a recursive ajax request, making one into success porperty of the previous one. It is the next one:
+
+```jQuery
+
+$.ajax({
+    url: "index.php",
+    type: "POST",
+    data:  new FormData(this),
+    contentType: false,
+            cache: false,
+    processData:false,
+    beforeSend : function() {
+        $("#preview").fadeOut();
+        $("#err").fadeOut();
+    },
+    success: function(data) {
+
+        var imgData = JSON.parse(data).imgTag;
+        var resultResponse = JSON.parse(data).resultResponse;
+
+        console.log(imgData, resultResponse);
+
+        if (imgData != '') {
+            $("#preview").html(imgData).fadeIn();
+        }
+
+        switch(resultResponse) {
+            case 'forbidden-type':
+                $('#forbidden-type').modal('show');
+              break;
+            case 'upload-success':
+                uploadSuccess = true;
+                $('#upload-success').modal('show');
+              break;
+            case 'upload-exists':
+                $('#upload-exists').modal('show'); 
+              break;
+            case 'forbidden-size':
+                $('#forbidden-size').modal('show');
+              break;
+            case 'forbidden-extension':
+                $('#forbidden-extension').modal('show');
+              break;
+            case 'empty-parameters':
+                $('#empty-parameters').modal('show');
+              break;
+          }
+
+        var totalImages = parseFloat($('#main-wrapper').attr('data-total-images'));
+        var imagesLoaded = parseFloat($('#main-wrapper').attr('data-loaded-images'));
+        imagesToLoad = totalImages - imagesLoaded;
+
+        $("#upload-picture-form")[0].reset(); 
+
+        $.ajax({
+            method  : "GET",
+            url     : "index.php",
+            contentType: 'html',
+            data: { "mod" : "picture", 
+                    "op" : "reloadPictures",
+                    "imagesToLoad" : imagesToLoad,
+                    "imagesLoaded" : imagesLoaded },
+            success : function(data) {
+
+                if (uploadSuccess) {
+
+                    $('#main-wrapper')[0].innerHTML += data;
+
+                    var totalImages = parseFloat($('#main-wrapper').attr('data-total-images'));
+                    var imagesLoaded = parseFloat($('#main-wrapper').attr('data-loaded-images'));
+
+                    $('#main-wrapper').attr('data-total-images', parseFloat(totalImages) + 1);
+                    $('#main-wrapper').attr('data-loaded-images', parseFloat(imagesLoaded) + 1);
+
+                    totalImages = parseFloat($('#main-wrapper').attr('data-total-images'));  
+                    imagesLoaded = parseFloat($('#main-wrapper').attr('data-loaded-images'));  
+
+                    $('#painting-notfound-title').attr('style', 'display: none'); 
+
+                    console.log('Computed value in recursive ajax for: ')
+                    console.log('Images loaded: ' + imagesLoaded)
+                    console.log('Total images: ' + totalImages)
+
+                }
+
+            },
+            error : function(e) {
+                $("#err").html(e).fadeIn();
+            }
+        });
+    },
+    error: function(e) {
+        $("#err").html(e).fadeIn();
+    }                     
+});
+
+```
+
+### MVC orientation
+
+Project follows MVC pattern and it is organised based on its rules. The main controller manages the way app flows, sending to one or another operation depending on the the action requested in each case. 
+
+```php
+
+<?php 
+
+    require_once 'C:\xampp\htdocs\MVC\resources\php\session.php';
+    
+    $userSession = Session::getInstance();
+    $userSession->launch();
+    
+    if ($userSession->allowAccess()
+            && $userSession->checkIfIndexExists('current-user')) {
+        $mod = $_GET['mod']??'show';
+        $op = $_GET['op']??'display';
+    } else {
+        $mod = $_GET['mod']??'user';
+        $op = $_GET['op']??'login';
+    }
+
+    if (isset($_POST['mod'], $_POST['op'])) {
+        $mod = $_POST['mod'];
+        $op = $_POST['op'];
+    }
+
+    $controllerName =  $mod.'Controller';
+
+    require_once 'src/controllers/'.$controllerName.'.php';
+
+    $controller = new $controllerName();
+    if (method_exists($controller, $op)) $controller->$op();
+
+?>
+
+
+```
+
+### Styles - CSS
+
+Styles features still have to be implemented. At the moment is a bit ugly. It will be done soon... :expressionless:
+
+
+
 
 
 
