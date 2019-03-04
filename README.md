@@ -64,6 +64,22 @@ This app is organised around __five different fields__:
 
 * __Messages__: king category. It complies the objective which the app was thought for. It launches first a query to bring user stored galleries and offer them as possible contacts, organising them in checkboxes, so the user can tick them. A text area is displayed to gather message information. To implement mail function, a simple and famous library has been chosen: PHP Mailer. 
 
+## Important features 
+
+* Login: controls user introduce right credentials. Otherwise access won't be allowed and a modal will pop up indicating it.
+
+* Register: errors are dynamically created if a name, surname or email are reapeated and already detected in the system. It also includes a reset button that clears all input data. In case of normal flow, info is preserved.
+
+* Shows page: slider with images loaded from the API or database, depending on database content. Info about the events is injected on the panels. 
+
+* Account page: gives the user the option to modify his data. It also controls if there's a conflict with another users profile.
+
+* Galleries: extracts personal galleries from database that are saved in specific user profile. A number of random galleries is shown and a button to execute an ajax requests allows the page to be filled with new galleries. 
+
+* Paintings: permits the user upload images. A lot of security measures are implemented to avoid errors: size, format, empty parameters. Reloading is also arranged through ajax.
+
+* Messages: it follows the same mechanism as galleries loading the data from database. It dynamically changes depending on the content extracted. If no entries are brought, a div informing is displayed. Messages preview is launched once confirm button is pressed, containing accurate info about the process. Paintings will be shown with their respective checkboxes to attach them as content in the email. Finally, stmp sending is executed and saved on database. 
+
 ## Database structure
 
 Firstly, you can check a brief and graphic summary about database organisation:
